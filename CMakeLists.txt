@@ -20,12 +20,16 @@ catkin_package()
 ## Build talker and listener
 include_directories(include ${catkin_INCLUDE_DIRS})
 
-add_executable(data_read src/data_acquire.cpp)
+add_executable(data_read src/robot3_joy_control.cpp)
 target_link_libraries(data_read ${catkin_LIBRARIES})
 add_dependencies(data_read data_read_generate_messages_cpp)
 
-add_executable(ground_station src/ground_station.cpp)
+add_executable(ground_station src/ground_station_joy_control.cpp)
 target_link_libraries(ground_station ${catkin_LIBRARIES})
 add_dependencies(ground_station data_read_generate_messages_cpp)
+
+add_executable(data_receive src/ground_station_data_receive.cpp)
+target_link_libraries(data_receive ${catkin_LIBRARIES})
+add_dependencies(data_receive data_read_generate_messages_cpp)
 
 # %EndTag(FULLTEXT)%
