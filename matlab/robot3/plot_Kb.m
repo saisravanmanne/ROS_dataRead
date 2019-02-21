@@ -10,9 +10,10 @@ Kg = 9.68;  % gear ratio
 l = 2000; % size of the array
 i_v = 12.10; % initial battery voltage
 killerKb = csv2table('killme.csv',1,2000);
-ea1 = i_v - (table2array(killerKb(1:l,2)))*4.8*10^(-3);  % right motor voltage
-ia1 = table2array(killerKb(1:l,4))*34*10^(-3);  % right motor current
-ws1 = table2array(killerKb(1:l,6));  % right motor angular velocity
+ea1 = i_v - (table2array(killerKb(1:l,12)))*4.8*10^(-3);  % right motor voltage
+ia1 = table2array(killerKb(1:l,12))*34*10^(-3);  % right motor current
+ws1 = table2array(killerKb(1:l,4));  % right motor angular velocity
+volt = table2array(killerKb(1:l,14)); % input PWM value
 Kb1 = (ea1 - ra1*ia1)./(Kg*ws1);   % right motor back emf calculation
 %% plot without filtering
 figure;
@@ -56,9 +57,10 @@ title('Right Motor (filtered)');
 l = 2000; % size of the array
 i_v = 12.10; % initial battery voltage
 killerKb = csv2table('killme.csv',1,2000);
-ea2 = i_v - (table2array(killerKb(1:l,8)))*4.8*10^(-3);  % right motor voltage
+ea2 = i_v - (table2array(killerKb(1:l,10)))*4.8*10^(-3);  % right motor voltage
 ia2 = table2array(killerKb(1:l,10))*34*10^(-3);  % right motor current
-ws2 = table2array(killerKb(1:l,12));  % right motor angular velocity
+ws2 = table2array(killerKb(1:l,2));  % right motor angular velocity
+volt = table2array(killerKb(1:l,14)); % input PWM value
 Kb2 = (ea2 - ra2*ia1)./(Kg*ws2);   % right motor back emf calculation
 %% plot without filtering
 figure;
