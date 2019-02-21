@@ -1,3 +1,5 @@
+ // receives input voltages from topic "input_voltage" and records 2000 data points
+//  emergency stop feature programmed in the robot3 module incase of high current
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include "std_msgs/Float64.h"
@@ -10,10 +12,31 @@
 #include <iostream>
 #include <fstream>
 
-class readData{
-	public: 
-	 readData();
+int emergency = 0;
+
+class emergencyStop{
+	public:
+	 emergencyStop();
 	private:
+	 ros::NodeHandle n;
+	 ros::Subscriber sub;
+	 void callBack(const sensor_msgs::Joy::ConstPtr& joy);
+};
+	emergencyStop::emergencyStop(){
+	 sub = n.subscribe<sensor_msgs::Joy>("joy", 10, &emergencyStop::callBack,this);
+	}
+	
+	void emergencyStop::callBack(const sensor_msgs::Joy::ConstPtr& joy){
+	 if (joy->axes[1] + joy->axes[2] + joy->axes[3] != 0)
+	  emergency = 1;
+	}
+
+
+
+class readData{
+ 	public: 
+	 readData();   
+	private:        // emergency stop feature programmed in the robot3 module incase of high current
 	 void callBack(const geometry_msgs::Twist::ConstPtr& msg);
 	 void callBack2(const std_msgs::Float64::ConstPtr& v);
          void dataWrite(const geometry_msgs::Twist::ConstPtr& msg,std_msgs::Float64 v);
@@ -38,7 +61,13 @@ class readData{
  	}
 
 	void readData::callBack(const geometry_msgs::Twist::ConstPtr& msg){
-        if (volt.data - voltd.data != 0){
+	if (emergency == 1){
+	 vel.linear.x = 0;
+	 vel.angular.z = 0;	
+         pub.publish(vel);
+	}
+	else{   
+	if (volt.data - voltd.data != 0){
                 vel.linear.x = volt.data;
 	        vel.angular.z = volt.data;        	
 		if ((msg->angular.y > 0)&&(msg->angular.z > 0)){
@@ -53,7 +82,7 @@ class readData{
 		  i = 0;
 		}
      	 }
- 	
+ 	 }
 	 }	 
          
          void readData::callBack2(const std_msgs::Float64::ConstPtr& v){
@@ -74,9 +103,10 @@ class readData{
 int main(int argc, char **argv)
 {
  ros::init(argc, argv, "data_receive");
-
+ 
+ emergencyStop delta;
  readData dude;
-
+ 
  ros::spin();
 
  return 0;

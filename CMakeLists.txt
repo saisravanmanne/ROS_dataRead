@@ -32,4 +32,8 @@ add_executable(data_receive src/ground_station_data_receive.cpp)
 target_link_libraries(data_receive ${catkin_LIBRARIES})
 add_dependencies(data_receive data_read_generate_messages_cpp)
 
+add_executable(data_send src/robot_3_data_send.cpp)
+target_link_libraries(data_send ${catkin_LIBRARIES})
+add_dependencies(data_send data_read_generate_messages_cpp)
+
 # %EndTag(FULLTEXT)%

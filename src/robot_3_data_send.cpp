@@ -1,59 +1,40 @@
 #include "ros/ros.h"
 #include "std_msgs/String.h"
+#include "std_msgs/Int8.h"
 #include<geometry_msgs/Vector3.h>
 #include<geometry_msgs/Vector3Stamped.h>
 #include<geometry_msgs/Twist.h>
 #include<sensor_msgs/Joy.h>
-
 #include <sstream>
 #include <iostream>
 #include <fstream>
 
-
-class TeleopJoy{
-	public:
-	 TeleopJoy();
-	private:
-	 void callBack(const sensor_msgs::Joy::ConstPtr& joy);
-	 ros::NodeHandle n; 
-	 ros::Publisher pub;
-	 ros::Subscriber sub;
-	// int i_velLinear, i_velAngular;
-};
-	TeleopJoy::TeleopJoy()
-	 {
-	  pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1);
-	  sub = n.subscribe<sensor_msgs::Joy>("joy", 10, &TeleopJoy::callBack,this);
-	 }
-	void TeleopJoy::callBack(const sensor_msgs::Joy::ConstPtr& joy)
-	 {
-	  geometry_msgs::Twist vel;
-	  vel.linear.x = -((joy->axes[1]*400)+(joy->axes[2]*400));
-	  vel.angular.z = -(-(joy->axes[2]*400)+(joy->axes[1]*400));
-	  pub.publish(vel);
- }
 
 class readData{
 	public: 
 	 readData();
 	private:
 	 ros::NodeHandle n;
-	 ros::Publis sub;
+	 ros::Publisher pub;
+	 ros::Subscriber sub;
+	 void callBack(const geometry_msgs::Twist::ConstPtr& msg);
+	 std_msgs::Int8 emergency;
 };
 
 	readData::readData(){
-	sub = n.subscribe<geometry_msgs::Twist>("arduino_vel", 10, &readData::callBack,this);
+	sub = n.subscribe<geometry_msgs::Twist>("arduino_vel", 1000, &readData::callBack,this);
+	pub = n.advertise<std_msgs::Int8>("emergency_stop",100);
 	}
 
 	void readData::callBack(const geometry_msgs::Twist::ConstPtr& msg){
-	 std::ofstream myfile;
-	 myfile.open ("example.txt"); 
-	 myfile << "this is the first cell in the first column.\n";
- 	 myfile << "a,b,c,\n";
-	 myfile << "c,s,v,\n";
-	 myfile << "1,2,3.456\n";
-	 myfile << "semi;colon";
-	 myfile.close(); 
+	 if ((msg->angular.y > 80)||(msg->angular.z > 80)){
+	 emergency.data = 0;
+  	 pub.publish(emergency);
+ 	 }
+	 else {
+	 emergency.data = 1;
+	 pub.publish(emergency);
+	 }
 	 //return 0; 
 }
 

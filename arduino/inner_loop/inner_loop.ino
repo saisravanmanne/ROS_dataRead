@@ -8,6 +8,7 @@
 #include <geometry_msgs/Vector3.h>
 #include <geometry_msgs/Vector3Stamped.h>
 #include <geometry_msgs/Twist.h>
+#include <std_msgs/Int8.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
 #include <utility/imumaths.h>
@@ -28,6 +29,7 @@ double wd ;    // Desired angular speed of COM about ICC(Instantaneous center of
 double vd ;    // Desired longitudinal speed of center of mass
 int m1;
 int m2;
+int emergency;
 long Lcount; // Present Encoder value
 long Rcount; // Present Encoder value    
 long Lcount_last=0; // Previous encoder value
@@ -41,7 +43,15 @@ void twist_message_cmd(const geometry_msgs::Twist& msg)
   //wd = -msg.angular.z ;
   m1 = msg.linear.x  ;
   m2 = msg.angular.z ;
+  
+}
 
+// for emergency stop in case of high current
+void callBack(const std_msgs::Int8& e)
+{
+
+  emergency = e.data;
+  
 }
 
 // Node handle
@@ -58,6 +68,7 @@ ros::Publisher pub("arduino_vel", &rpm_msg);
 
 // Subscriber of the reference velocities coming from the outerloop
 ros::Subscriber<geometry_msgs::Twist> sub("cmd_vel", &twist_message_cmd );
+ros::Subscriber<std_msgs::Int8> sub2("emergency_stop", &callBack );
 
 
 
@@ -158,8 +169,8 @@ void loop() {
       // Update Motors with corresponding speed and send speed values through serial port
 
      publish_data();          
-     md.setM1Speed(m1);
-     md.setM2Speed(m2);
+     md.setM1Speed(m1*emergency);
+     md.setM2Speed(m2*emergency);
      arduino_nh.spinOnce() ;
       
     }   
