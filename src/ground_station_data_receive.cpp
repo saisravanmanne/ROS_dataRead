@@ -71,7 +71,7 @@ class readData{
                 vel.linear.x = -volt.data;
 	        vel.angular.z = -volt.data;   
 		pub.publish(vel);     	
-		if ((msg->angular.y > 0)&&(msg->angular.z > 0)){
+		if ((msg->linear.x != 0)&&(msg->linear.y != 0)){
 		  dataWrite(msg,volt);
 		  i = i+1;
             	}

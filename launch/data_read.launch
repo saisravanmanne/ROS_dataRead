@@ -22,8 +22,8 @@
     <param name="~baudrate" value="57600"/>
     </node>
  
-    <node pkg="joy" name="joy" type="joy_node">
-    </node>
+    <!--<node pkg="joy" name="joy" type="joy_node">
+    </node> -->
 
    <node pkg="data_read" name="data_read" type="data_read">
    </node>
