@@ -68,13 +68,14 @@ class readData{
 	}
 	else{   
 	if (volt.data - voltd.data != 0){
-                vel.linear.x = volt.data;
-	        vel.angular.z = volt.data;        	
+                vel.linear.x = -volt.data;
+	        vel.angular.z = -volt.data;   
+		pub.publish(vel);     	
 		if ((msg->angular.y > 0)&&(msg->angular.z > 0)){
 		  dataWrite(msg,volt);
 		  i = i+1;
             	}
-	        if (i == 2000){
+	        if (i == 200){
 		  voltd.data = volt.data;
 		  vel.linear.x = 0;
 	          vel.angular.z = 0;	
@@ -95,7 +96,7 @@ class readData{
 	 myfile.open(filename.c_str(), std::ios::app);
          myfile << " W_left " << msg->linear.x << " W_right " << msg->linear.y << " sample_time ";
          myfile << msg->linear.z << " time "<< msg->angular.x << " M2_analog(left) " << msg->angular.y;
-         myfile << " M1_analog(right) " << msg->angular.z << " PWM value " << v.data << "\n";
+         myfile << " M1_analog(right) " << msg->angular.z << " PWM_value " << v.data << "\n";
 	 myfile.close(); 
 	 //return 0; 
 }

@@ -29,7 +29,8 @@ double wd ;    // Desired angular speed of COM about ICC(Instantaneous center of
 double vd ;    // Desired longitudinal speed of center of mass
 int m1;
 int m2;
-int emergency;
+int emergency = 0
++1;
 long Lcount; // Present Encoder value
 long Rcount; // Present Encoder value    
 long Lcount_last=0; // Previous encoder value
