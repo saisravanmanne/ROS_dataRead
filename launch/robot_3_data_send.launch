@@ -23,7 +23,7 @@
     </node>  
  
    <!-- <node pkg="joy" name="joy" type="joy_node">
-    </node>  --->
+    </node>  -->
 
    <node pkg="data_read" name="robot_3_data_send" type="data_send">
    </node>

@@ -48,7 +48,7 @@ class readData{
 	 ros::Subscriber sub; 
 	 ros::Subscriber sub2;
          ros::Publisher pub;
-         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/data.csv";
+         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/robot3/data.csv";
 };
 
 	readData::readData(){
