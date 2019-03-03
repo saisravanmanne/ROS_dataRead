@@ -30,12 +30,13 @@ class readData{
 	}
 
 	void readData::callBack(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
-	 tf::Quaternion q(
+	 tf::Quaternion q1(
         	msg->pose.pose.orientation.x,
         	msg->pose.pose.orientation.y,
         	msg->pose.pose.orientation.z,
         	msg->pose.pose.orientation.w);
-	 tf::Matrix3x3 m(q);	
+	 tf::Quaternion q2(0.707, 0.000, 0.000, 0.707);
+	 tf::Matrix3x3 m(q2*q1);	
 	 double roll, pitch, yaw;
      	 m.getRPY(roll, pitch, yaw); 
  	 tracker1.x = msg->pose.pose.position.x;
@@ -57,3 +58,5 @@ int main(int argc, char **argv)
 
  return 0;
 }
+
+
