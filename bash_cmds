@@ -1,0 +1,13 @@
+export ROS_MASTER_URI=http://localhost:11311
+export ROS_IP=192.168.1.5
+
+sudo sh -c "echo 0 >/proc/sys/net/ipv4/icmp_echo_ignore_broadcasts"
+sudo service procps restart
+sudo ~/jetson_clocks.sh
+sudo nvpmodel -m 0
+
+sudo chmod 666 /dev/ttyACM0
+#sudo chmod 666 /dev/ttyUSB1
+sudo chmod 666 /dev/ttyACM1
+
+sudo hostname tegra-ubuntu-robot3

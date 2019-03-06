@@ -15,7 +15,7 @@
 int emergency = 0;
 
 class emergencyStop{
-	public:
+        public:
 	 emergencyStop();
 	private:
 	 ros::NodeHandle n;

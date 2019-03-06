@@ -36,3 +36,5 @@
      <remap from="input" to="turtlesim1/turtle1"/>
      <remap from="output" to="turtlesim2/turtle1"/>
    </node>   -->
+
+<!--<include file="$(find package_name)/directory/another.launch"/> -->

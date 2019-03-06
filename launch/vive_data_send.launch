@@ -1,0 +1,41 @@
+<?xml version="1.0"?>
+<launch>
+<include file="$(find vive_tracker)/launch/vive_tracker.launch"/>
+
+    <!-- <node name="master_discovery" pkg="master_discovery_fkie" type="master_discovery" output="screen">
+           <param name="mcast_group" value="224.0.0.1" />
+    </node>
+    <node name="master_sync" pkg="master_sync_fkie" type="master_sync" output="screen"> 
+            # Ignore all hosts by default 
+
+            # Add selective hosts to sync with 
+
+            # Ignore particular nodes 
+            <rosparam param="sync_nodes">['/vive_data_send'] </rosparam>
+            # Sync just selected topics 
+            <rosparam param="sync_topics"> ['/tracker_1'] </rosparam>
+    </node> -->
+
+
+  <!--  <node pkg="rosserial_arduino" name="serial" type="serial_node.py">
+    <param name="~port" value="/dev/ttyACM0"/>
+    <param name="~baudrate" value="57600"/>
+    </node>  -->
+ 
+    <node pkg="joy" name="joy" type="joy_node">
+    </node>
+
+   <node pkg="data_read" name="vive_data_send" type="vive_data_send">
+   </node>
+	
+   <!--<node pkg="data_read" name="ground_station_data_read" type="data_receive">
+   </node>-->
+
+
+ </launch>
+
+
+<!--<node pkg="turtlesim" name="mimic" type="mimic">
+     <remap from="input" to="turtlesim1/turtle1"/>
+     <remap from="output" to="turtlesim2/turtle1"/>
+   </node>   -->
