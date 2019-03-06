@@ -2,19 +2,19 @@
 <launch>
 <include file="$(find vive_tracker)/launch/vive_tracker.launch"/>
 
-   <node name="master_discovery" pkg="master_discovery_fkie" type="master_discovery" output="screen">
+    <!-- <node name="master_discovery" pkg="master_discovery_fkie" type="master_discovery" output="screen">
            <param name="mcast_group" value="224.0.0.1" />
     </node>
-    <node name="master_sync" pkg="master_sync_fkie" type="master_sync" output="screen"> -->
+    <node name="master_sync" pkg="master_sync_fkie" type="master_sync" output="screen"> 
             # Ignore all hosts by default 
-            <!-- <rosparam param="ignore_hosts">['*']</rosparam> -->
+
             # Add selective hosts to sync with 
-            <!-- <rosparam param="sync_hosts">[192.168.0.100]</rosparam> -->
+
             # Ignore particular nodes 
-            <rosparam param="sync_nodes">['/vive_data_send'] </rosparam> 
+            <rosparam param="sync_nodes">['/vive_data_send'] </rosparam>
             # Sync just selected topics 
-            <rosparam param="sync_topics"> ['/tracker_1'] </rosparam> 
-    </node>
+            <rosparam param="sync_topics"> ['/tracker_1'] </rosparam>
+    </node> -->
 
 
   <!--  <node pkg="rosserial_arduino" name="serial" type="serial_node.py">
