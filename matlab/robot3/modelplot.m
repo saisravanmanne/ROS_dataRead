@@ -1,5 +1,4 @@
-
-fucntion plot = modelplot(L1,L2,V)
+function platoon = modelplot(L1,L2,V)
 %% constant decleration
 ra1 = 4.641; % right motor
 ra2 = 3.934; % left motor
@@ -12,7 +11,7 @@ l1 = L1;
 l2 = L2; % size of the array
 input_voltages = [11.87 11.39 11.09 10.70 10.10 9.09];
 i_v = input_voltages(V) ; % initial battery voltage
-killerKb = csv2table('data_test_4.csv',l1,l2);
+killerKb = csv2table('data_test_no_load_2.csv',l1,l2);
 ea1 = i_v - (table2array(killerKb(:,12)))*4.8*10^(-3);  % right motor voltage
 ia1 = table2array(killerKb(:,12))*34*10^(-3);  % right motor current
 ws1 = table2array(killerKb(:,4));  % right motor angular velocity
@@ -40,19 +39,22 @@ hold on;
 
 
 
-% %% load the proper csv file in here and name it as killerKb;
-% % Kb this is for back emf calculation 
+%% load the proper csv file in here and name it as killerKb;
+% Kb this is for back emf calculation 
 % killerKb = csv2table('data_test_4.csv',l1,l2);
 % ea2 = i_v - (table2array(killerKb(:,10)))*4.8*10^(-3);  % right motor voltage
 % ia2 = table2array(killerKb(:,10))*34*10^(-3);  % right motor current
 % ws2 = table2array(killerKb(:,2));  % right motor angular velocity
 % volt = table2array(killerKb(:,14)); % input PWM value
+% time = table2array(killerKb(:,8)); % time stamp
+% time = (time - time(1))/1000; % from mill sec to sec
 % %% plot the step response
 % figure;
 % plot(time,-1*ws2,'r');
 % xlabel({'Time','in milli-seconds (ms)'})
 % ylabel({'Angular Velocity','in (radians/sec)'})
 % title('Left Motor at voltage ')
+% hold on;
 %% Final Calculations 
 
 Kb = 0.0019;  % back emf in V
@@ -66,14 +68,14 @@ La2 = 1389.9*10^(-6);
 % Right motor characteristics
 Ra = Ra1;
 La = La1;
-DC = 3.4494;  % DC gain
-ple = 1.428;  % Dominant pole
+DC = 9.754;  % DC gain
+ple = 4.1667;  % Dominant pole
 B = (((Kt/Kg)/DC) - (Kt*Kb))/Ra;
 I = B/ple + Kt*Kb/(Ra*ple);
 s = tf([1 0],[1]);
-%model = ((Kt*i_v/Kg)/(((I*s + B)*Ra) + Kt*Kb))*(Ra/(La*s + Ra));
+model = ((Kt/Kg)/(((I*s + B)*Ra) + Kt*Kb))*(Ra/(La*s + Ra));
 %figure;
-model = 4.4594/(s+1.427);
+%model = 4.4594/(s+1.427);
 step(model*i_v)
 
 
