@@ -63,7 +63,7 @@ int main(int argc, char **argv)
  ros::init(argc, argv, "data_read");
 
  TeleopJoy teleop_turtle;
- //readData dude;
+ readData dude;
 
  ros::spin();
 
