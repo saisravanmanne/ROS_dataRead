@@ -45,10 +45,21 @@ D = [0 0; 0 0];
 P_ss = ss(A,B,C,D)
 s = tf([1 0],[1]);
 P_tf = tf(P_ss);
-P_tf = zpk(P_tf);
+P_tf = zpk(P_tf)
 P_approx = [P_tf(1,1) 0; 0 P_tf(2,2)]
-
+%Finding the transmission zeros involved for the low freq approximation
+%model
+P_tf = P_approx;
+z = tzero(P_tf);
+H1 = evalfr(P_tf,z(1));
+svd(H1)
+H1 = evalfr(P_tf,z(2));
+svd(H1)
+H1 = evalfr(P_tf,z(3));
+svd(H1)
+H1 = evalfr(P_tf,z(4));
+svd(H1)
+% for the low freq approximation model there are no transmission zeros 
 %% PI Controller Design 
-Pinner = 1.313*(s+0.1131)/((s+0.1878)*(s+0.0809))
-bode(Pinner)
+
 
