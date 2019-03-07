@@ -13,7 +13,7 @@
             # Ignore particular nodes 
             <rosparam param="sync_nodes">['/vive_data_send'] </rosparam>
             # Sync just selected topics 
-            <rosparam param="sync_topics"> ['/tracker_1','tracker_2'] </rosparam>
+            <rosparam param="sync_topics"> ['/tracker_1','/tracker_2'] </rosparam>
     </node> 
 
 
