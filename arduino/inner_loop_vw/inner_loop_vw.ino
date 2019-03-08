@@ -20,6 +20,8 @@ unsigned long sample_time= td*1000 ;
 
 double wd ;    // Desired angular speed of COM about ICC(Instantaneous center of curvature)
 double vd ;    // Desired longitudinal speed of center of mass
+double vdf ;   // Feedback values of V
+double wdf ;   // Feedback values of W
 
 double wR;      // present angular speed of right motor
 double wL;      // present angular speed of left motor
@@ -28,8 +30,8 @@ double wLp=0.0; // previous angular speed left motor
 double wLn;     // average angular speed (wL + wLp)/2  
 double wRn;     // average angular speed (wR + wRp)/2
 
-double Radius =0.045; // Change it (radius of wheel) 0.045
-double Length =0.308; // Change it (distance between wheels) 0.555 0.308
+double Radius = 0.06; // Change it (radius of wheel) 0.045
+double Length =0.36; // Change it (distance between wheels) 0.555 0.308
 
 double wdr;       // Desired angular speed of right wheel using wd & vd /  prefilter parameter x_{n+1}
 double wdl;       // Desired angular speed of left wheel using wd & vd  / prefilter parameter x_{n+1}
@@ -57,12 +59,12 @@ double Rerror_pp = 0; // Controller input x_{n}
 int PWMR; // Controller output for right motor
 int PWML; // Controller output for left motor
 
-double kp = 5 ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
-double ki = 50 ;          // Controller gain ki 
+double kp ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
+double ki ;          // Controller gain ki 
 double alpha = 200;  // Roll off parameter alpha 
-double h = ki/kp;    //  prefilter parameter z = ki/kp obtained from K = (g(s+z)/s)*(100/(s+100)) 
+double h ;    //  prefilter parameter z = ki/kp obtained from K = (g(s+z)/s)*(100/(s+100)) 
 
-int emergency = 1;
+int emergency = 1; //emergency stop feature is programmed in the robot 3 module in case of high current
 
 
 // Subscriber call back to /cmd_vel
@@ -72,7 +74,8 @@ void twist_message_cmd(const geometry_msgs::Twist& msg)
   wd = msg.angular.x ;
   vdf = msg.linear.y  ;
   wdf = msg.angular.y ;
-  
+  kp = msg. linear.z;
+  ki = msg.angular.z;
 }
 
 // for emergency stop in case of high current
@@ -161,23 +164,21 @@ void loop() {
 
 void publish_data(){  // currently not being used 
 
-  // Present angular velocities
-  wL = (LdVal/CPR)*(2*3.14159) ; // rads/sec
-  wR = (RdVal/CPR)*(2*3.14159) ; // rads/sec
+
   
-  rpm_msg.linear.x = wL;//left_ticks;
+  /*rpm_msg.linear.x = wL;//left_ticks;
   rpm_msg.linear.y = wR;//right_ticks;
   rpm_msg.linear.z = sample_time;
   rpm_msg.angular.x = Time;
   rpm_msg.angular.y = md.getM2CurrentMilliamps();
   rpm_msg.angular.z = md.getM1CurrentMilliamps();
   pub.publish(&rpm_msg);
-  //Serial.println(Time);
+  //Serial.println(Time);*/
 
 }
 
 // UPDATE MOTORS
-void Update_Motors(double vd, double wd,double vdf, double wdf)
+void Update_Motors(double vd, double wd)
 {
   // Desired angular speed of two motors
   wdr = (2*vd + Length*wd)/(2*Radius) ; // 2*vd - wd*L
@@ -242,10 +243,13 @@ void Update_Motors(double vd, double wd,double vdf, double wdf)
   {
     PWML=-400 ;
   }
+  if ((md.getM2CurrentMilliamps() >= 80)||(md.getM1CurrentMilliamps() >= 80)){   // 80 is not the current value, its the analog value
+    emergency = 0;        // make it 80*34e-03 when compiling with a different computer 
+  }
   
   // Running the motors
-  md.setM1Speed(PWML) ; // PWML 
-  md.setM2Speed(PWMR) ; // PWMR
+  md.setM1Speed(PWML*emergency) ; // PWML 
+  md.setM2Speed(PWMR*emergency) ; // PWMR
   //md.setM1Speed(100) ; // l  +ve(YES)/-ve(NO) PWML
   //md.setM2Speed(100) ;    
   

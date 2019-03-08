@@ -1,5 +1,3 @@
-
-
 # %Tag(FULLTEXT)%
 cmake_minimum_required(VERSION 2.8.3)
 project(data_read)
@@ -39,5 +37,13 @@ add_dependencies(data_send data_read_generate_messages_cpp)
 add_executable(vive_data_send src/vive_data_send.cpp)
 target_link_libraries(vive_data_send ${catkin_LIBRARIES})
 add_dependencies(vive_data_send data_read_generate_messages_cpp)
+
+add_executable(ground_station_innerLoop src/ground_station_innerLoop.cpp)
+target_link_libraries(ground_station_innerLoop ${catkin_LIBRARIES})
+add_dependencies(ground_station_innerLoop data_read_generate_messages_cpp)
+
+add_executable(ground_station_data_receive_Vive src/ground_station_data_receive_Vive.cpp)
+target_link_libraries(ground_station_data_receive_Vive ${catkin_LIBRARIES})
+add_dependencies(ground_station_data_receive_Vive data_read_generate_messages_cpp)
 
 # %EndTag(FULLTEXT)%
