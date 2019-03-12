@@ -15,7 +15,7 @@
 
 unsigned long Time=0; // Starting time
 unsigned long lastMilli = 0; 
-double td = 0.01; // T = 0.01 sec (100 hz)
+double td = 0.007; // T = 0.01 sec (100 hz)
 unsigned long sample_time= td*1000 ; 
 int CPR = 464 ; // counts per revolution 
 
@@ -154,7 +154,7 @@ SetupEncoders() ;
   arduino_nh.initNode() ;
 
   //broadcaster.init(arduino_nh) ; //added
-  
+    
   arduino_nh.getHardware()->setBaud(115200);
   arduino_nh.advertise(pub); // setting up subscriptions
   arduino_nh.subscribe(sub); // setting up publications

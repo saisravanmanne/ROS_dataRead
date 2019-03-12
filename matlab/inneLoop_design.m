@@ -52,14 +52,53 @@ P_approx = [P_tf(1,1) 0; 0 P_tf(2,2)]
 P_tf = P_approx;
 z = tzero(P_tf);
 H1 = evalfr(P_tf,z(1));
-svd(H1)
+svd(H1);
 H1 = evalfr(P_tf,z(2));
-svd(H1)
+svd(H1);
 H1 = evalfr(P_tf,z(3));
-svd(H1)
+svd(H1);
 H1 = evalfr(P_tf,z(4));
-svd(H1)
+svd(H1);
 % for the low freq approximation model there are no transmission zeros 
 %% PI Controller Design 
+
+% plant model based on the empherical data
+BW = 2*pi*20;
+ta = 1/(200);
+ph = 60*pi/180;
+DC_value = 38;
+rise_time = 3;
+domi_pole = 5/(rise_time);
+P = (DC_value*domi_pole)/(s+domi_pole)
+pre = 100/(s+100);
+[Mag, Pha, BW] = bode(P,BW); 
+% PI = g(s+z)/s
+z = BW/(tan(ph - (pi/2) - (Pha*pi/180)));
+g = BW/((sqrt((z^2)+(BW^2)))*(Mag));
+PI = g*(s+z)/s
+CL = PI*P/(1+PI*P);
+bode(CL*pre);
+g;
+g*z;
+c2d(100/(s+100),0.01,'tustin');
+
+z = BW/(tan((ph - (pi/2) - (Pha*pi/180) + atan(ta*BW))/2));
+k = BW*sqrt(((ta*BW)^2)+1)/(((z^2)+(BW^2))*Mag);
+PID = k*((s+z)^2)/(s*(ta*s+1));
+bode(PID*P)
+CL2 = PID*P/(1+PID*P);
+allmargin(CL2)
+k
+z
+
+
+ td = 0.01;
+ b0 = 09;
+ b1 = 800;
+ c1 = b1 + td*b0/2;
+ c0 =-b1 + td*b0/2;
+ A = b0/(c1+c0);
+
+% PI 6
 
 

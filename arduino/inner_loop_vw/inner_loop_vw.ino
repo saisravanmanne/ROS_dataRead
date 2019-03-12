@@ -61,8 +61,12 @@ int PWML; // Controller output for left motor
 
 double kp ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
 double ki ;          // Controller gain ki 
+double kpl ; double kpr;         // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
+double kil ; double kir
+;         // Controller gain ki 
 double alpha = 200;  // Roll off parameter alpha 
 double h ;    //  prefilter parameter z = ki/kp obtained from K = (g(s+z)/s)*(100/(s+100)) 
+double b1; double b0; double c1; double c0; double A;
 
 int emergency = 1; //emergency stop feature is programmed in the robot 3 module in case of high current
 
@@ -74,8 +78,16 @@ void twist_message_cmd(const geometry_msgs::Twist& msg)
   wd = msg.angular.x ;
   vdf = msg.linear.y  ;
   wdf = msg.angular.y ;
-  kp = msg. linear.z;
+  kp = msg.linear.z;
   ki = msg.angular.z;
+  //kil = kir;
+  //kpl = kpr;
+  h = ki/kp;
+  b0 = kpr;
+  b1 = kir;
+  c1 = b1 + td*(b0)/2;
+  c0 =-b1 + td*(b0)/2;
+  A = b0/(c1+c0);
 }
 
 // for emergency stop in case of high current
@@ -94,7 +106,7 @@ geometry_msgs::Twist rpm_msg ;
 
 // Publisher of the right and left wheel angular velocities
 //ros::Publisher pub("robot_2/arduino_vel", &rpm_msg); // Add robot_*
-//ros::Publisher pub("arduino_vel", &rpm_msg);
+ros::Publisher pub("arduino_vel", &rpm_msg);
 
 // Subscriber of the reference velocities coming from the outerloop
 ros::Subscriber<geometry_msgs::Twist> sub("cmd_vel", &twist_message_cmd );
@@ -114,7 +126,7 @@ md.init();
   //broadcaster.init(arduino_nh) ; //added
   
   arduino_nh.getHardware()->setBaud(115200);
-  //arduino_nh.advertise(pub); // setting up subscriptions
+  arduino_nh.advertise(pub); // setting up subscriptions
   arduino_nh.subscribe(sub); // setting up publications
   delay(1000);
 
@@ -127,9 +139,9 @@ void loop() {
       Time = millis() ;
 
       // Update Motors with corresponding speed and send speed values through serial port
-
+     publish_data();   
      Update_Motors(vd,wd);
-          
+ 
 
      arduino_nh.spinOnce() ;
       
@@ -166,12 +178,12 @@ void publish_data(){  // currently not being used
 
 
   
-  /*rpm_msg.linear.x = wL;//left_ticks;
-  rpm_msg.linear.y = wR;//right_ticks;
-  rpm_msg.linear.z = sample_time;
-  rpm_msg.angular.x = Time;
-  rpm_msg.angular.y = md.getM2CurrentMilliamps();
-  rpm_msg.angular.z = md.getM1CurrentMilliamps();
+  rpm_msg.linear.x = CR;//left_ticks;
+  rpm_msg.linear.y = CL;
+  rpm_msg.linear.z = 0;
+  rpm_msg.angular.x = 0;
+  rpm_msg.angular.y = wRn;//md.getM2CurrentMilliamps();
+  rpm_msg.angular.z = wLn;//md.getM1CurrentMilliamps();
   pub.publish(&rpm_msg);
   //Serial.println(Time);*/
 
@@ -179,7 +191,7 @@ void publish_data(){  // currently not being used
 
 // UPDATE MOTORS
 void Update_Motors(double vd, double wd)
-{
+{ 
   // Desired angular speed of two motors
   wdr = (2*vd + Length*wd)/(2*Radius) ; // 2*vd - wd*L
   wdl = (2*vd - Length*wd)/(2*Radius) ; // 2*vd + wd*L
@@ -195,61 +207,67 @@ void Update_Motors(double vd, double wd)
   
 
   // Present angular velocities
-  wL = (2*vdf + Length*wdf)/(2*Radius); 
-  wR = (2*vdf - Length*wdf)/(2*Radius); // rads/sec
+  wR = (2*vdf + Length*wdf)/(2*Radius); 
+  wL = (2*vdf - Length*wdf)/(2*Radius); // rads/sec
 
   wLn = (wL + wLp)/2.0;
   wRn = (wR + wRp)/2.0;
    
   wLp = wL; // saving present angular velocities to be used in the next loop
-  wRp = wR; // saving present angular velocities to be used in the next loop
+  wRp  = wR; // saving present angular velocities to be used in the next loop
 
   // I saw in the trial runs that if I don't use prefilter, the movement is very jerky !! So always use prefilter.    
-  Rerror = wrf - wRn ; // error (ref - present)
-  Lerror = wlf - wLn ; // error (ref - present)
-
+  Rerror = wdr - wRn ; // error (ref - present)
+  Lerror = wdl - wLn ; // error (ref - present)
+  if (abs(Rerror) < 0.05)
+    Rerror = 0;
+  if (abs(Lerror) < 0.05)
+    Lerror = 0;
   // Inner loop controller
-  CL = ((alpha*td*td*ki+2*alpha*td*kp)*Lerror + (2*alpha*td*td*ki)*Lerror_p + (alpha*td*td*ki-2*alpha*td*kp)*Lerror_pp + 8*CL_p - (4-2*alpha*td)*CL_pp)/(2*alpha*td + 4);
-  CR = ((alpha*td*td*ki+2*alpha*td*kp)*Rerror + (2*alpha*td*td*ki)*Rerror_p + (alpha*td*td*ki-2*alpha*td*kp)*Rerror_pp + 8*CR_p - (4-2*alpha*td)*CR_pp)/(2*alpha*td + 4);
+CL = ((alpha*td*td*ki+2*alpha*td*kp)*Lerror + (2*alpha*td*td*ki)*Lerror_p + (alpha*td*td*ki-2*alpha*td*kp)*Lerror_pp + 8*CL_p - (4-2*alpha*td)*CL_pp)/(2*alpha*td + 4);
+CR = ((alpha*td*td*ki+2*alpha*td*kp)*Rerror + (2*alpha*td*td*ki)*Rerror_p + (alpha*td*td*ki-2*alpha*td*kp)*Rerror_pp + 8*CR_p - (4-2*alpha*td)*CR_pp)/(2*alpha*td + 4);
+// PI controller  
+//  CL = (CL_p + A*c1*Lerror + A*c0*Lerror_p);  
+//  CR = (CR_p + A*c1*Rerror + A*c0*Rerror_p);
 
-  CR_pp = CR_p;
   CR_p = CR;
-  CL_pp = CL_p;
   CL_p = CL;
+  CR_pp = CR_p;
+  CL_pp = CL_p;
+  
   Lerror_pp = Lerror_p;
   Lerror_p = Lerror;
   Rerror_pp = Rerror_p;
   Rerror_p = Rerror; 
 
-  PWMR = CR  ;//int(255.0*CR/5.15);  // CHANGE THIS !!
-  PWML = CL  ;//int(255.0*CL/5.15);  // CHANGE THIS !!
+  PWMR = CR ;//int(255.0*CR/5.15);  // CHANGE THIS !!
+  PWML = CL ;//int(255.0*CL/5.15);  // CHANGE THIS !!
 
   // Saturating input commands to right motor   
-  if (PWMR>=400) 
+ if (PWMR>=300) 
   {  
-    PWMR=400;
+    PWMR=300;
   } 
-  else if (PWMR<=-400) 
+  else if (PWMR<=-1) 
   {
-    PWMR=-400 ;
-  }
-
-  // Saturating input commands to left motor
-  if (PWML>=400) 
-  {
-    PWML=400 ;
-  }
-  else if (PWML<=-400) 
-  {
-    PWML=-400 ;
-  }
-  if ((md.getM2CurrentMilliamps() >= 80)||(md.getM1CurrentMilliamps() >= 80)){   // 80 is not the current value, its the analog value
-    emergency = 0;        // make it 80*34e-03 when compiling with a different computer 
+    PWMR=0 ;
   }
   
+  // Saturating input commands to left motor
+  if (PWML>=300) 
+  {
+    PWML=300 ;
+  }
+  else if (PWML<=-1) 
+  {
+    PWML=0 ;
+  }   
+
+  CL_p = PWML;
+  CR_p = PWMR;
   // Running the motors
-  md.setM1Speed(PWML*emergency) ; // PWML 
-  md.setM2Speed(PWMR*emergency) ; // PWMR
+  md.setM1Speed(-PWMR*emergency) ; // PWML 
+  md.setM2Speed(-PWML*emergency) ; // PWMR
   //md.setM1Speed(100) ; // l  +ve(YES)/-ve(NO) PWML
   //md.setM2Speed(100) ;    
   

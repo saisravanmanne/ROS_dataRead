@@ -78,7 +78,7 @@ class readData{
 		  dataWrite(msg,volt);    
 		  i = i+1;
             //	}
-	        if (i == 350){
+	        if (i == 250){
 		  voltd.data = volt.data;
 		  vel.linear.x = 0;
 	          vel.angular.z = 0;	
