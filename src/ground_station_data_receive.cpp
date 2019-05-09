@@ -46,17 +46,17 @@ class readData{
 	 int i;
   	 ros::NodeHandle n;
 	 ros::Subscriber sub; 
-	 ros::Subscriber sub2;
-         ros::Publisher pub;
-         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/robot3/data.csv";
+	 //ros::Subscriber sub2;
+         //ros::Publisher pub;
+         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/robot3/data2.csv";
 };
 
 	readData::readData(){
 	sub = n.subscribe<geometry_msgs::Twist>("arduino_vel", 1000, &readData::callBack,this);
-	sub2= n.subscribe<std_msgs::Float64>("input_voltage",1000, &readData::callBack2,this);
-	pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1);		
-	volt.data = 0;
-	voltd.data = 0;
+	//sub2= n.subscribe<std_msgs::Float64>("input_voltage",1000, &readData::callBack2,this);
+	//pub = n.advertise<geometry_msgs::Twist>("cmd_vel",1);		
+	volt.data = 0; // should be 0 initially
+	voltd.data = 1; // should be 0 initially // changed to 1 to make it run without the inputvoltage topic
  	i = 0; 	
  	}
 
@@ -64,22 +64,22 @@ class readData{
 	if (emergency == 1){
 	 vel.linear.x = 0;
 	 vel.angular.z = 0;	
-         pub.publish(vel);
+         //pub.publish(vel);
 	}
 	else{   
 	if (volt.data - voltd.data != 0){
                 vel.linear.x = -volt.data;
 	        vel.angular.z = -volt.data;   
-		pub.publish(vel);     	
+		//pub.publish(vel);     	
 		if ((msg->linear.x != 0)&&(msg->linear.y != 0)){
 		  dataWrite(msg,volt);
 		  i = i+1;
             	}
-	        if (i == 600){
+	        if (i == 20000){
 		  voltd.data = volt.data;
 		  vel.linear.x = 0;
 	          vel.angular.z = 0;	
-                  pub.publish(vel);
+                 // pub.publish(vel);
 		  i = 0;
 		}
      	 }
@@ -105,7 +105,7 @@ int main(int argc, char **argv)
 {
  ros::init(argc, argv, "data_receive");
  
- emergencyStop delta;
+ //emergencyStop delta;
  readData dude;
  
  ros::spin();

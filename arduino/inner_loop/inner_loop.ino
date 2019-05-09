@@ -15,7 +15,7 @@
 
 unsigned long Time=0; // Starting time
 unsigned long lastMilli = 0; 
-double td = 0.007; // T = 0.01 sec (100 hz)
+double td = 0.01; // T = 0.01 sec (100 hz)
 unsigned long sample_time= td*1000 ; 
 int CPR = 464 ; // counts per revolution 
 
@@ -163,7 +163,7 @@ SetupEncoders() ;
 
 void loop() {
  
-  if (millis() - Time > sample_time)
+  if (millis() - Time > 1) // sample_time = 1000Hz, in reality it is limited to 105
     { 
       Time = millis() ;
 
@@ -218,9 +218,9 @@ void publish_data(){
   rpm_msg.linear.x = wL;//left_ticks;
   rpm_msg.linear.y = wR;//right_ticks;
   rpm_msg.linear.z = sample_time;
-  rpm_msg.angular.x = Time;
-  rpm_msg.angular.y = md.getM2CurrentMilliamps();
-  rpm_msg.angular.z = md.getM1CurrentMilliamps();
+  rpm_msg.angular.x = 0;//Time;
+  rpm_msg.angular.y = 0;//md.getM2CurrentMilliamps();
+  rpm_msg.angular.z = 0;//md.getM1CurrentMilliamps();
   pub.publish(&rpm_msg);
   //Serial.println(Time);
 

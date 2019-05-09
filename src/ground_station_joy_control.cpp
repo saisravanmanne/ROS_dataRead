@@ -1,3 +1,4 @@
+
 #include "ros/ros.h"
 #include "std_msgs/String.h"
 #include<geometry_msgs/Vector3.h>
@@ -8,6 +9,8 @@
 #include <sstream>
 #include <iostream>
 #include <fstream>
+
+
 
 
 class TeleopJoy{
@@ -28,8 +31,8 @@ class TeleopJoy{
 	void TeleopJoy::callBack(const sensor_msgs::Joy::ConstPtr& joy)
 	 {
 	  geometry_msgs::Twist vel;
-	  vel.linear.x = -((joy->axes[1]*400)+(joy->axes[2]*400));
-	  vel.angular.z = -(-(joy->axes[2]*400)+(joy->axes[1]*400));
+	  vel.linear.x = -(std::abs((joy->buttons[11]*300))+ joy->buttons[8]*300 ) ;//-(std::abs((joy->buttons[11]*400)) - ( - joy->buttons[9]*400));//-((joy->axes[1]*400)+(joy->axes[2]*400));
+	  vel.angular.z = 0;//-(-(joy->axes[2]*400)+(joy->axes[1]*400));
 	  pub.publish(vel);
  }
 
@@ -40,7 +43,7 @@ class readData{
 	 void callBack(const geometry_msgs::Twist::ConstPtr& msg);
 	 ros::NodeHandle n;
 	 ros::Subscriber sub;
-         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/data.csv";
+         std::string filename = "/home/shravan/catkin_ws/src/data_read/matlab/robot3/data.csv";
 };
 
 	readData::readData(){
@@ -72,7 +75,8 @@ int main(int argc, char **argv)
 {
  ros::init(argc, argv, "ground_station");
 
- //TeleopJoy teleop_turtle;
+ 
+ TeleopJoy teleop_turtle;
  readData dude;
 
  ros::spin();

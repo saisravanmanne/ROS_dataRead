@@ -45,25 +45,35 @@ double wlf_p=0;   // prefilter parameter y_{n} for left motor'
 double CR;       // Controller output y_{n+2} Right motor
 double CR_p=0;   // Controller output y_{n+1} Right motor
 double CR_pp=0;  // Controller output y_{n}   Right motor
+double CR_ppp=0;
+double CR_pppp=0;
 double CL;       // Controller output y_{n+2} Left motor
 double CL_p=0;   // Controller output y_{n+1} Left motor
 double CL_pp=0;  // Controller output y_{n}   Left motor
+double CL_ppp=0;
+double CL_pppp=0;
 
 double Lerror;   // Lerror = wlf(output of prefilter/ reference speed) - wLn.....or... Controller input x_{n+2}
 double Lerror_p = 0; // Controller input x_{n+1}
 double Lerror_pp = 0; // Controller input x_{n}
+double Lerror_ppp = 0;
 double Rerror;   // Rerror = wrf(output of prefilter/ reference speed) - wRn....or.....Controller input x_{n+2}
 double Rerror_p = 0; // Controller input x_{n+1}
 double Rerror_pp = 0; // Controller input x_{n}
+double Rerror_ppp = 0;
+
+double Lx = 0; // left - integrator anti-windup
+double Rx = 0; // right - integrator anti-windup
 
 int PWMR; // Controller output for right motor
 int PWML; // Controller output for left motor
 
-double a0 ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
-double a1 ;          // Controller gain ki 
-double b0 ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
-double b1 ;
-double k; double z;         // Controller gain ki 
+double A ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
+double B ;          // Controller gain ki 
+double C ;          // Controller gain kp of K = (kp + ki/s) * (100/(s+100))
+double ta = 1/1260;
+double Po = 1;
+double g; double z;         // Controller gain ki 
 double alpha = 200;  // Roll off parameter alpha 
 double h ;    //  prefilter parameter z = ki/kp obtained from K = (g(s+z)/s)*(100/(s+100)) 
 // for PD controller double b1; double b0; double c1; double c0; double A;
@@ -78,12 +88,12 @@ void twist_message_cmd(const geometry_msgs::Twist& msg)
   wd = msg.angular.x ;
   vdf = msg.linear.y  ;
   wdf = msg.angular.y ;
-  k = msg.linear.z;
+  g = msg.linear.z;
   z = msg.angular.z;
-  a0 = 2 + z*(0.01);
-  a1 = z*(0.01) - 2;
-  b0 = 2*(2*(1/200)+0.01)/k;
-  b1 = 2*(0.01-2*(1/200))/k;
+  A = ((2*g*z) - (ta*g*z*z))/ta ;
+  B = g*z*z*td ;
+  C = (g*(z*ta - 1)*(z*ta - 1))/ta ;
+  Po = 1 ;
   //h = ki/kp;
 }
 
@@ -175,10 +185,10 @@ void publish_data(){  // currently not being used
 
 
   
-  rpm_msg.linear.x = Lerror;//left_ticks;
-  rpm_msg.linear.y = wdl;
-  rpm_msg.linear.z = Lerror*a0*a0 + Lerror_p*2*a0*a1 + Lerror_pp*a1*a1;
-  rpm_msg.angular.x = - CL_p*(b1-b0) + CL_pp*b1;
+  rpm_msg.linear.x = CR;//left_ticks;
+  rpm_msg.linear.y = CL;
+  rpm_msg.linear.z = CL_p*(3 + Po) + CL_pp*(-3 -3*Po) + CL_ppp*(1 + 3*Po) + CL_pppp*(-Po) ;
+  rpm_msg.angular.x = Lerror_p*(A+C) + Lerror_pp*(-A*Po -A + B - 2*C) + Lerror_ppp*(A*Po - B*Po + C);
   rpm_msg.angular.y = wRn;//md.getM2CurrentMilliamps();
   rpm_msg.angular.z = wLn;//md.getM1CurrentMilliamps();
   pub.publish(&rpm_msg);
@@ -221,17 +231,26 @@ void Update_Motors(double vd, double wd)
   if (abs(Lerror) < 0.05)
     Lerror = 0;
   // Inner loop controller PID
-CL = (Lerror*a0*a0 + Lerror_p*2*a0*a1 + Lerror_pp*a1*a1 - CL_p*(b1-b0) + CL_pp*b1)*b0;
-CR = (Rerror*a0*a0 + Rerror_p*2*a0*a1 + Rerror_pp*a1*a1 - CR_p*(b1-b0) + CR_pp*b1)*b0;
-// PI controller  
+Lx = CL_p*(3 + Po) + CL_pp*(-3 -3*Po) + CL_ppp*(1 + 3*Po) + CL_pppp*(-Po);
+Rx = CR_p*(3 + Po) + CR_pp*(-3 -3*Po) + CR_ppp*(1 + 3*Po) + CR_pppp*(-Po);
+CL = Lx - (Lerror_p*(A+C) + Lerror_pp*(-A*Po -A + B - 2*C) + Lerror_ppp*(A*Po - B*Po + C));  
+CR = Rx - (Rerror_p*(A+C) + Rerror_pp*(-A*Po -A + B - 2*C) + Rerror_ppp*(A*Po - B*Po + C));  
+
+// PI controller no rolloff
 //  CL = (CL_p + A*c1*Lerror + A*c0*Lerror_p);  
 //  CR = (CR_p + A*c1*Rerror + A*c0*Rerror_p);
+  CL_pppp = CL_ppp;
+  CL_ppp = CL_pp;
   CL_pp = CL_p;
-  
+
+  CR_pppp = CR_ppp; 
+  CR_ppp = CR_pp;
   CR_pp = CR_p;
-    
+
+  Lerror_ppp = Lerror_pp;  
   Lerror_pp = Lerror_p;
   Lerror_p = Lerror;
+  Rerror_ppp = Rerror_ppp;
   Rerror_pp = Rerror_p;
   Rerror_p = Rerror; 
 
@@ -243,7 +262,7 @@ CR = (Rerror*a0*a0 + Rerror_p*2*a0*a1 + Rerror_pp*a1*a1 - CR_p*(b1-b0) + CR_pp*b
   {  
     PWMR=300;
   } 
-  else if (PWMR<=-1) 
+  else if (PWMR<=0) 
   {
     PWMR=0 ;
   }
@@ -253,13 +272,13 @@ CR = (Rerror*a0*a0 + Rerror_p*2*a0*a1 + Rerror_pp*a1*a1 - CR_p*(b1-b0) + CR_pp*b
   {
     PWML=300 ;
   }
-  else if (PWML<=-1) 
+  else if (PWML<=0) 
   {
     PWML=0 ;
   }   
 
-  CL_p = CL;
-  CR_p = CR;
+  CL_p = PWML;
+  CR_p = PWMR;
   // Running the motors
   md.setM1Speed(-PWMR*emergency) ; // PWML 
   md.setM2Speed(-PWML*emergency) ; // PWMR

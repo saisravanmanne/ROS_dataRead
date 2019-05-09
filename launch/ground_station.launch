@@ -14,7 +14,7 @@
             <!-- <rosparam param="ignore_nodes">['/robot_0/amcl','/robot_0/diff_tf_joystick','/robot_0/    		    map_server','/robot_0/rplidarNode','/robot_0/base_link_to_laser','/robot_0/joy_node
 	    ','/robot_0/rosserial_lipo'] </rosparam> -->
             # Sync just selected topics 
-            <rosparam param="sync_topics"> ['/joy','/arduino_vel','/cmd_vel234'] </rosparam> 
+            <rosparam param="sync_topics"> ['/arduino_vel','/cmd_vel'] </rosparam> 
     </node>
   
   <!--  <node pkg="rosserial_arduino" name="serial" type="serial_node.py">
@@ -25,8 +25,13 @@
     <node pkg="joy" name="joy" type="joy_node">
     </node>
 
-   <node pkg="data_read" name="ground_station" type="ground_station">
-   </node>
+<node pkg="data_read" name="ground_station" type="ground_station">
+   </node>  
+
+<!-- either one of these both are not needed -->
+<!--   <node pkg="data_read" name="ground_station_data_read" type="data_receive">
+   </node>   -->
+
 
 
  </launch>

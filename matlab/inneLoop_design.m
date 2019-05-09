@@ -64,7 +64,7 @@ svd(H1);
 
 % plant model based on the empherical data
 BW = 2*pi*20;
-ta = 1/(200);
+ta = 1/1260;
 ph = 60*pi/180;
 DC_value = 38;
 rise_time = 3;
@@ -91,14 +91,16 @@ allmargin(CL2)
 k
 z
 
+g = k;
+ta = 1/1260;
+Po = 1;
+A = ((2*g*z) - (ta*g*z*z))/ta ;
+B = g*z*z*td ;
+C = (g*(z*ta - 1)*(z*ta - 1))/ta ;
+Po = 1 ;
 
- td = 0.01;
- b0 = 09;
- b1 = 800;
- c1 = b1 + td*b0/2;
- c0 =-b1 + td*b0/2;
- A = b0/(c1+c0);
-
+CL = CL_p*(3 + Po) + CL_pp*(-3 -3*Po) + CL_ppp*(1 + 3*Po) + CL_pppp*(-Po) - (Lerror_p*(A+C) + Lerror_p*(-A*Po -A + B - 2*C) + Lerror_p*(A*Po - B*Po + C));  
+CR = CR_p*(3 + Po) + CR_pp*(-3 -3*Po) + CR_ppp*(1 + 3*Po) + CR_pppp*(-Po) - (Rerror_p*(A+C) + Rerror_p*(-A*Po -A + B - 2*C) + Rerror_p*(A*Po - B*Po + C));  
 % PI 6
 
 
