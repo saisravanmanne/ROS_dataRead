@@ -1,11 +1,11 @@
 clc
 close all
 clear all 
-data_length = [2967 3014 1574 1501 5386 29854];
+data_length = [2967 3014 1574 1501 5386 5386];
 n = 6;
 l1 = 1; 
 l2 = data_length(n);
-killerKb = csv2table('Rmotor.csv',l1,l2);
+killerKb = csv2table('data5.csv',l1,l2);
 td = 1/105;
 Wl = -table2array(killerKb(:,2));
 Wr = table2array(killerKb(:,4));

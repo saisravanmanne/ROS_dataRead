@@ -18,7 +18,7 @@ minval =  maxval/8;
 % plate
 Ic = 0;
 m_plate = 0.411;
-L = 0.28;
+L = 0.28/2;
 Ic = Ic + (8/6)*m_plate*(L*L);
 % 3d print
 m3d = 0.055;
@@ -52,6 +52,6 @@ Ic = Ic + m_ard_shield*(L_ard_shield)^2;
 I_approx = (8/12)*m*L*L; 
 %% I original
 Iw = maxval;
-Iw = from matlab gre-box model
+Iw = 8.5978e-05;
 I = Ic + 2*mw*L*L + Iw;
 
