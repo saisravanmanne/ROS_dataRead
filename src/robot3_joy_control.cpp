@@ -39,7 +39,7 @@ class readData{
 	private:
 	 void callBack(const geometry_msgs::Twist::ConstPtr& msg);
 	 ros::NodeHandle n;
-	 ros::Subscriber sub
+	 ros::Subscriber sub;
 };
 
 	readData::readData(){
