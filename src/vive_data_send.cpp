@@ -44,10 +44,20 @@ class readData{
 	 tf::Quaternion q2(0.707, 0.000, 0.000, 0.707);
 	 tf::Matrix3x3 m(q2*q1);	
 	 double roll, pitch, yaw;
-     	 m.getRPY(roll, pitch, yaw); 
- 	 tracker1.x = msg->pose.pose.position.x;
-	 tracker1.y = -(msg->pose.pose.position.z);
-	 tracker1.z = yaw;
+	 static double yaw_prev = 0, relYaw = 0;
+     	 m.getRPY(roll, pitch, yaw);     // converts the Quaternion to Euler angles
+ 	 if ((std::abs(yaw - yaw_prev)) > 3.141) {
+ 		if (yaw > yaw_prev) relYaw = relYaw - (2*3.141 - std::abs(yaw - yaw_prev));
+		else relYaw = relYaw + (2*3.141 - std::abs(yaw - yaw_prev));  //if (yaw < yaw_prev) relYaw = relYaw + (2*3.141 - std::abs(yaw - yaw_prev));
+	 }
+	 else {
+		relYaw = relYaw + (yaw - yaw_prev);
+	 }
+
+	 yaw_prev = yaw;
+	 tracker1.x = -(msg->pose.pose.position.x);
+	 tracker1.y = msg->pose.pose.position.z;
+	 tracker1.z = relYaw;
 	 pub.publish(tracker1);
 }
 	void readData::callBack2(const geometry_msgs::PoseWithCovarianceStamped::ConstPtr& msg){
@@ -60,8 +70,8 @@ class readData{
 	 tf::Matrix3x3 m(q2*q1);	
 	 double roll, pitch, yaw;
      	 m.getRPY(roll, pitch, yaw); 
- 	 tracker2.x = msg->pose.pose.position.x;
-	 tracker2.y = -(msg->pose.pose.position.z);
+ 	 tracker2.x = -(msg->pose.pose.position.x);
+	 tracker2.y = msg->pose.pose.position.z;
 	 tracker2.z = yaw;
 	 pub2.publish(tracker2);
 }
